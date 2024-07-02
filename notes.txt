@@ -1,0 +1,16 @@
+## Zadaniem jest stworzenie prostej aplikacji do przeliczania walut
+
+1. Pobieranie danych: Aplikacja powinna pobierać dane o kursach walut z API Narodowego Banku Polskiego (NBP API).
+
+2. Wyświetlanie kursów walut: Na stronie głównej powinny być wyświetlane aktualne kursy walut z możliwością wyboru daty waluty.
+- wyswietlic biezacy kurs walut (by default)
+- date-input z mozliwoscia wybrania daty
+
+3. Przeliczanie walut: Użytkownik powinien mieć możliwość przeliczenia kwoty z jednej waluty na drugą. Do tego celu powinien być dostępny formularz, w którym użytkownik może wprowadzić kwotę i wybrać waluty.
+- formularz: wprowadzona kwota, waluta wprowadzonej waluty, waluta na wyjscia, wynik
+
+4. Responsywność: Aplikacja powinna być responsywna i dobrze wyglądać na różnych urządzeniach.
+
+5. Dostępność: Aplikacja powinna spełniać standardy WCAG 2.1.
+
+6. Stylowanie: Użyj CSS do stworzenia atrakcyjnego i czytelnego interfejsu użytkownika. Zadanie proszę wykonać w Angularze"
