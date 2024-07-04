@@ -1,8 +1,45 @@
-<h1
-  class="text-3xl font-bold tracking-wider leading-10 uppercase text-gray-700"
+<ng-container
+  *ngIf="{
+    currenctRates: currenctRates$ | async
+  } as vm"
 >
-  {{ title }}
-</h1>
-<h2 class="text-xl font-normal tracking-wider text-center text-gray-500">
-  {{ subtitle }}
-</h2>
+  <main class="w-full mx-auto">
+    <h1
+      class="text-3xl font-bold tracking-wider leading-10 uppercase text-gray-700 text-center"
+    >
+      {{ title }}
+    </h1>
+    <h2 class="text-xl font-normal tracking-wider text-center text-gray-500">
+      {{ subtitle }}
+    </h2>
+
+    <ng-container *ngIf="vm.currenctRates">
+      <section class="container mx-auto py-8">
+        <p class="italic py-4">Dzisiejsze kursy walut:</p>
+
+        <div class="grid grid-cols-5 gap-4 w-full pb-8">
+          <div
+            class="w-full rounded-lg shadow-lg"
+            *ngFor="let currency of vm.currenctRates | keyvalue"
+          >
+            <div class="bg-white p-4">
+              <h3 class="text-xl font-normal text-gray-700">
+                {{ currency.value.currency }}
+              </h3>
+              <p class="text-gray-500">
+                Sprzedaż: {{ currency.value.rates[0].bid }}
+              </p>
+              <p class="text-gray-500">
+                Kupno: {{ currency.value.rates[0].ask }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full flex justify-end items-center">
+          <button>Sprawdź więcej kursów ></button>
+        </div>
+      </section>
+    </ng-container>
+  </main>
+</ng-container>
