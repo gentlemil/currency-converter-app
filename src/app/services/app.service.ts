@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, catchError, EMPTY, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ExchangeInterfaceResponse } from '../types/exchangeRateResponse.interface';
 
@@ -8,6 +8,7 @@ import { ExchangeInterfaceResponse } from '../types/exchangeRateResponse.interfa
   providedIn: 'root',
 })
 export class AppService {
+  isLoading$ = new BehaviorSubject<boolean>(false);
   private readonly url: string = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
@@ -16,14 +17,20 @@ export class AppService {
   getCurrentExchangeCurrency(
     currency: string
   ): Observable<ExchangeInterfaceResponse> {
+    this.isLoading$.next(true);
     const fullUrl = `${this.url}/exchangerates/rates/c/${currency}/today`;
-    return this.http.get<ExchangeInterfaceResponse>(fullUrl);
+    return this.http.get<ExchangeInterfaceResponse>(fullUrl).pipe(
+      catchError(() => {
+        return EMPTY;
+      })
+    );
   }
 
   getExchangeCurrency(
     currency: string,
     date: string
   ): Observable<ExchangeInterfaceResponse> {
+    this.isLoading$.next(true);
     const fullUrl = `${this.url}/exchangerates/rates/c/${currency}/${date}`;
     return this.http.get<ExchangeInterfaceResponse>(fullUrl);
   }
