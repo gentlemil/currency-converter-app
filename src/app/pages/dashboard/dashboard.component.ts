@@ -11,50 +11,51 @@ import { CommonModule } from '@angular/common';
 import { ExchangeInterfaceResponse } from '../../types/exchangeRateResponse.interface';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { CurrencyCodes } from '../../enums/currencyCodes.enum';
+import { CurrentExchangeRatesComponent } from '../../components/currentExchangeRates/currentExchangeRates.component';
+import { HeaderComponent } from '../../components/header/header.component';
 
 @Component({
   standalone: true,
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ReactiveFormsModule, CommonModule],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    CommonModule,
+    HeaderComponent,
+    CurrentExchangeRatesComponent,
+  ],
 })
 export class DashboardComponent implements OnInit {
   isLoading$ = this.appService.isLoading$;
-  title = 'Currency Converter';
-  subtitle = 'Check current exchange rates.';
+
   availableCurrencies = [];
 
   CurrencyCodes = CurrencyCodes;
+  convertTypes = ['buy', 'sell'];
+
+  convertResult$ = new BehaviorSubject<number | null>(null);
 
   Object = Object;
 
   currencyExchangeHistory$ =
     new BehaviorSubject<ExchangeInterfaceResponse | null>(null);
 
-  public currenctRates$ = combineLatest({
-    [CurrencyCodes.EUR]: this.appService.getCurrentExchangeCurrency(
-      CurrencyCodes.EUR
-    ),
-    [CurrencyCodes.USD]: this.appService.getCurrentExchangeCurrency(
-      CurrencyCodes.USD
-    ),
-    [CurrencyCodes.CHF]: this.appService.getCurrentExchangeCurrency(
-      CurrencyCodes.CHF
-    ),
-    [CurrencyCodes.GBP]: this.appService.getCurrentExchangeCurrency(
-      CurrencyCodes.GBP
-    ),
-    [CurrencyCodes.JPY]: this.appService.getCurrentExchangeCurrency(
-      CurrencyCodes.JPY
-    ),
-  });
-
   public dateField = new FormControl();
 
   public form = this.fb.group({
     currency: ['', Validators.required],
     date: ['', Validators.required],
+  });
+
+  public convertForm = this.fb.group({
+    polishAmount: ['', Validators.required],
+    foreignAmount: ['', Validators.required],
+    sellPrice: [0, Validators.required],
+    buyPrice: [0, Validators.required],
+    currency: ['', Validators.required],
+    type: ['buy', Validators.required],
   });
 
   constructor(
@@ -75,6 +76,8 @@ export class DashboardComponent implements OnInit {
   }
 
   getHistoricalRates() {
+    console.log(this.form.getRawValue());
+
     if (this.form.invalid) {
       return;
     }
@@ -86,6 +89,7 @@ export class DashboardComponent implements OnInit {
       )
       .subscribe((res) => {
         this.currencyExchangeHistory$.next(res);
+        this.convertForm.get('currency')?.setValue(res.code);
       });
   }
 
@@ -93,4 +97,6 @@ export class DashboardComponent implements OnInit {
     this.form.reset();
     this.currencyExchangeHistory$.next(null);
   }
+
+  convertCurrency() {}
 }

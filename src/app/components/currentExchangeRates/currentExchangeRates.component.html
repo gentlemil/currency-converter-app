@@ -1,0 +1,27 @@
+<ng-container *ngIf="{ currenctRates: currenctRates$ | async } as vm">
+  <ng-container *ngIf="vm.currenctRates; else noData">
+    <p class="italic py-4">Dzisiejsze kursy walut:</p>
+
+    <div class="grid grid-cols-5 gap-4 w-full pb-8">
+      <div
+        class="w-full rounded-lg shadow-lg"
+        *ngFor="let currency of vm.currenctRates | keyvalue"
+      >
+        <div class="bg-white p-4">
+          <h3 class="text-xl font-normal text-gray-700">
+            {{ currency.value.currency }}
+          </h3>
+          <p class="text-gray-500">
+            Sprzedaż: {{ currency.value.rates[0].bid }}
+          </p>
+          <p class="text-gray-500">Kupno: {{ currency.value.rates[0].ask }}</p>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #noData>
+    <div class="border rounded-lg mt-12 mx-auto">
+      <p class="text-center text-gray-500 py-8">Mamy weekend, brak danych</p>
+    </div>
+  </ng-template>
+</ng-container>
