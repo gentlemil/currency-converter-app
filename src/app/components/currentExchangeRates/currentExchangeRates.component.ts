@@ -1,8 +1,9 @@
 import { AsyncPipe, KeyValuePipe, NgFor, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { combineLatest, map } from 'rxjs';
 import { AppService } from '../../services/app.service';
 import { CurrencyCodes } from '../../enums/currencyCodes.enum';
-import { combineLatest } from 'rxjs';
+import { ExchangeInterfaceResponse } from '../../types/exchangeRateResponse.interface';
 
 @Component({
   standalone: true,
@@ -13,23 +14,24 @@ import { combineLatest } from 'rxjs';
 })
 export class CurrentExchangeRatesComponent {
   public readonly CurrencyCodes = CurrencyCodes;
-  public currenctRates$ = combineLatest({
-    [CurrencyCodes.EUR]: this.appService.getCurrentExchangeCurrency(
-      CurrencyCodes.EUR
-    ),
-    [CurrencyCodes.USD]: this.appService.getCurrentExchangeCurrency(
-      CurrencyCodes.USD
-    ),
-    [CurrencyCodes.CHF]: this.appService.getCurrentExchangeCurrency(
-      CurrencyCodes.CHF
-    ),
-    [CurrencyCodes.GBP]: this.appService.getCurrentExchangeCurrency(
-      CurrencyCodes.GBP
-    ),
-    [CurrencyCodes.JPY]: this.appService.getCurrentExchangeCurrency(
-      CurrencyCodes.JPY
-    ),
-  });
+
+  public currentRates$ = combineLatest(
+    Object.values(CurrencyCodes).map((code: CurrencyCodes) =>
+      this.appService
+        .getCurrentExchangeCurrency(code)
+        .pipe(
+          map((rate: ExchangeInterfaceResponse) => ({ [code]: rate || [] }))
+        )
+    )
+  ).pipe(
+    map(
+      (
+        ratesArray: {
+          [x: string]: ExchangeInterfaceResponse;
+        }[]
+      ) => ratesArray.reduce((acc, curr) => ({ ...acc, ...curr }), {})
+    )
+  );
 
   constructor(private readonly appService: AppService) {}
 }

@@ -1,11 +1,10 @@
 <ng-container *ngIf="{ calculatorEnabled: calculatorEnabled$ | async } as vm">
   <div
-    class="container w-full rounded-md px-4 mt-4 grid grid-cols-1 md:grid-cols-2 gap-4"
+    class="container w-full rounded-md px-4 mt-8 grid grid-cols-1 md:grid-cols-2 gap-4"
   >
-    <!-- left side -->
     <div class="w-full border rounded-lg shadow-lg bg-gray-50 p-4">
       <p
-        class="text-gray-700 text-xl text-center uppercase tracking-wider pb-6"
+        class="text-gray-700 text-2xl whitespace-normal text-center uppercase tracking-wider pb-6 leading-10"
       >
         choose currency and specific date
       </p>
@@ -22,6 +21,8 @@
             class="border rounded-md p-2 w-32"
             placeholder="Kod waluty"
           >
+            <option value="" disabled selected>Choose Currency</option>
+
             <option *ngFor="let code of Object.values(CurrencyCodes)">
               {{ code }}
             </option>
@@ -30,6 +31,7 @@
           <input
             type="date"
             formControlName="date"
+            placeholder="Choose date"
             class="border rounded-md p-2"
           />
         </div>
@@ -84,21 +86,25 @@
       </div>
     </div>
 
-    <!-- right side -->
     <div class="rounded-md w-full border bg-gray-50 shadow-lg p-4">
-      <ng-container *ngIf="vm.calculatorEnabled; else noAverageData">
+      <div
+        [ngClass]="{
+          'pointer-events-none opacity-50': !vm.calculatorEnabled,
+          'pointer-events-auto opacity-100': vm.calculatorEnabled
+        }"
+      >
         <div class="px-4">
           <p
-            class="text-gray-700 text-xl text-center uppercase tracking-wider pb-6"
+            class="text-gray-700 text-2xl whitespace-normal text-center uppercase tracking-wider pb-6 leading-10"
           >
             calculator
           </p>
 
           <p class="text-gray-500 text-sm font-light">1 PLN equals</p>
 
-          <h5 class="text-gray-500 text-4xl font-medium leading-10">
+          <h5 class="text-gray-500 text-6xl font-normal leading-normal">
             {{ calculatorForm.get("midRate")!.value || "0.00" }}
-            <span class="text-base">{{
+            <span class="text-xl">{{
               calculatorForm.get("currencyCode")!.value
             }}</span>
           </h5>
@@ -108,12 +114,6 @@
           </p>
         </div>
 
-        <!-- formularz -->
-        <ng-container *ngIf="{ calcResult: calcResult$ | async }">
-          polishAmount :
-          {{ calculatorForm.get("polishAmount")!.value }} foreignAmount:
-          {{ calculatorForm.get("foreignAmount")!.value }}
-        </ng-container>
         <form
           [formGroup]="calculatorForm"
           (onSubmit)="onSubmitCalculateForm()"
@@ -169,17 +169,7 @@
             </div>
           </div>
         </form>
-      </ng-container>
-
-      <ng-template #noAverageData>
-        <div
-          class="w-full h-full p-4 text-center border-2 rounded-md flex justify-center items-center"
-        >
-          <p class="text-center text-gray-500 italic pb-8">
-            choose currency and date first
-          </p>
-        </div>
-      </ng-template>
+      </div>
     </div>
   </div>
 </ng-container>

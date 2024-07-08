@@ -22,6 +22,7 @@ import { AppService } from '../../services/app.service';
 import { ExchangeInterfaceResponse } from '../../types/exchangeRateResponse.interface';
 import { CurrencyCodes } from '../../enums/currencyCodes.enum';
 import { AverageRateResponse } from '../../types/avarageRateResponse.interface';
+import { format } from 'date-fns';
 
 @Component({
   standalone: true,
@@ -40,8 +41,8 @@ import { AverageRateResponse } from '../../types/avarageRateResponse.interface';
 })
 export class CalculatorComponent {
   public historyForm = this.fb.group({
-    currencyCode: [null, Validators.required],
-    date: ['', Validators.required],
+    currencyCode: [CurrencyCodes.EUR, Validators.required],
+    date: [format(new Date(), 'yyyy-MM-dd'), Validators.required],
   });
 
   public calculatorForm = this.fb.group({
@@ -153,6 +154,7 @@ export class CalculatorComponent {
             midRate: res.rates[0].mid,
           });
 
+          this.calculatorEnabled$.next(true);
           return this.getHistoricalRates(CurrencyCodes[res.code], date!);
         }),
         tap((res) => {
