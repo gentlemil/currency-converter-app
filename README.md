@@ -25,3 +25,12 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+####################################################
+####################################################
+
+Powered by NBP API [link]
+
+API:
+Tables: ['a', 'b', 'c'] - by default I'm using table = 'a'.
+Code, I am using 5 most popular, but there are much more available, check here LINK[https://en.wikipedia.org/wiki/ISO_4217]

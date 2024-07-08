@@ -9,10 +9,11 @@ import {
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ExchangeInterfaceResponse } from '../../types/exchangeRateResponse.interface';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { CurrencyCodes } from '../../enums/currencyCodes.enum';
 import { CurrentExchangeRatesComponent } from '../../components/currentExchangeRates/currentExchangeRates.component';
 import { HeaderComponent } from '../../components/header/header.component';
+import { CalculatorComponent } from '../../components/calculator/calculator.component';
 
 @Component({
   standalone: true,
@@ -25,6 +26,7 @@ import { HeaderComponent } from '../../components/header/header.component';
     CommonModule,
     HeaderComponent,
     CurrentExchangeRatesComponent,
+    CalculatorComponent,
   ],
 })
 export class DashboardComponent implements OnInit {
@@ -37,17 +39,7 @@ export class DashboardComponent implements OnInit {
 
   convertResult$ = new BehaviorSubject<number | null>(null);
 
-  Object = Object;
-
-  currencyExchangeHistory$ =
-    new BehaviorSubject<ExchangeInterfaceResponse | null>(null);
-
   public dateField = new FormControl();
-
-  public form = this.fb.group({
-    currency: ['', Validators.required],
-    date: ['', Validators.required],
-  });
 
   public convertForm = this.fb.group({
     polishAmount: ['', Validators.required],
@@ -69,33 +61,10 @@ export class DashboardComponent implements OnInit {
   }
 
   public getExchangeCurrency(
-    currency: string,
+    currency: CurrencyCodes,
     date: string
   ): Observable<ExchangeInterfaceResponse> {
     return this.appService.getExchangeCurrency(currency, date);
-  }
-
-  getHistoricalRates() {
-    console.log(this.form.getRawValue());
-
-    if (this.form.invalid) {
-      return;
-    }
-
-    this.appService
-      .getExchangeCurrency(
-        this.form.getRawValue().currency!,
-        this.form.getRawValue().date!
-      )
-      .subscribe((res) => {
-        this.currencyExchangeHistory$.next(res);
-        this.convertForm.get('currency')?.setValue(res.code);
-      });
-  }
-
-  clear() {
-    this.form.reset();
-    this.currencyExchangeHistory$.next(null);
   }
 
   convertCurrency() {}

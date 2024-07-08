@@ -5,7 +5,7 @@
 *,
 *::after,
 *::before {
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   box-sizing: border-box;
 }
 
@@ -16,6 +16,15 @@ body {
 
 html,
 body {
-  background-color: white;
+  background: rgb(92, 126, 176);
+  background: linear-gradient(
+    167deg,
+    rgba(92, 126, 176, 1) 0%,
+    rgba(217, 215, 201, 1) 100%
+  );
   color: #333333;
+}
+
+input {
+  width: inherit;
 }

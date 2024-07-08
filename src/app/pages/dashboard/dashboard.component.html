@@ -1,104 +1,16 @@
 <ng-container
   *ngIf="{
     isLoading: isLoading$ | async,
-    currencyExchangeHistory: currencyExchangeHistory$ | async,
+    
   } as vm"
 >
-  <main class="w-full mx-auto">
+  <main class="container mx-auto pt-12">
     <app-header></app-header>
-    <section class="container mx-auto py-8">
+
+    <section class="max-w-3/4 mx-auto py-8">
       <app-current-exchange-rates></app-current-exchange-rates>
 
-      <div class="container w-full rounded-md border py-4 mt-4">
-        <h3>Sprawdź historię ></h3>
-        <form [formGroup]="form" class="flex justify-start items-center gap-4">
-          <select
-            type="text"
-            formControlName="currency"
-            class="border rounded-md p-2"
-            placeholder="Kod waluty"
-          >
-            <option *ngFor="let code of Object.values(CurrencyCodes)">
-              {{ code }}
-            </option>
-          </select>
-
-          <input
-            type="date"
-            formControlName="date"
-            class="border rounded-md p-2"
-          />
-          <button
-            class="bg-blue-500 text-white rounded-md p-2 mr-4"
-            [ngClass]="{ 'bg-gray-500': form.invalid }"
-            (click)="getHistoricalRates()"
-            [disabled]="form.invalid"
-          >
-            Sprawdź
-          </button>
-          <button
-            class="bg-gray-500 text-white rounded-md p-2 mr-4"
-            type="button"
-            (click)="clear()"
-          >
-            Wyczyść
-          </button>
-        </form>
-
-        <ng-container *ngIf="vm.currencyExchangeHistory">
-          <div>
-            <p class="text-gray-500">
-              Kurs sprzedaży: {{ vm.currencyExchangeHistory.rates[0].bid }}
-            </p>
-            <p class="text-gray-500">
-              Kurs kupna: {{ vm.currencyExchangeHistory.rates[0].ask }}
-            </p>
-          </div>
-        </ng-container>
-      </div>
-
-      <!-- przeliczanie waluty -->
-      <div
-        *ngIf="vm.currencyExchangeHistory"
-        class="container w-full rounded-md border py-4 mt-4"
-      >
-        <p>przelicznik waluty</p>
-        <form [formGroup]="convertForm">
-          <input
-            type="number"
-            formControlName="polishAmount"
-            [placeholder]="'Kwota w pln'"
-            class="border rounded-md p-2"
-            placeholder="Kwota"
-          />
-          <input
-            type="number"
-            formControlName="foreignAmount"
-            [placeholder]="
-              'Kwota w' + vm.currencyExchangeHistory.code.toLowerCase()
-            "
-            class="border rounded-md p-2"
-            placeholder="Kwota"
-          />
-
-          <select
-            type="text"
-            formControlName="type"
-            class="border rounded-md p-2"
-            placeholder="Kupno/ sprzedaż"
-          >
-            <option *ngFor="let type of convertTypes">
-              {{ type }}
-            </option>
-          </select>
-        </form>
-        <button
-          class="bg-blue-500 text-white rounded-md p-2 mr-4"
-          (click)="convertCurrency()"
-        >
-          Przelicz
-        </button>
-      </div>
+      <app-calculator></app-calculator>
     </section>
   </main>
 </ng-container>

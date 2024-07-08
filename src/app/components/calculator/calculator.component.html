@@ -1,2 +1,189 @@
 <!-- check currency rates history -->
 <!-- calculate  -->
+
+<ng-container
+  *ngIf="{
+    currencyExchangeHistoryData: currencyExchangeHistoryData$ | async,
+    avaregaRateData: avaregaRateData$ | async
+  } as vm"
+>
+  <div
+    class="container w-full rounded-md px-4 mt-4 grid grid-cols-1 md:grid-cols-2 gap-4"
+  >
+    <!-- left side -->
+    <div class="w-full border rounded-lg shadow-lg bg-gray-50 p-4">
+      <p
+        class="text-gray-700 text-xl text-center uppercase tracking-wider pb-6"
+      >
+        choose currency and specific date
+      </p>
+
+      <form
+        [formGroup]="historyForm"
+        (onSubmit)="onSubmitCalculateForm()"
+        class="px-4 w-full py-4"
+      >
+        <div class="flex justify-center items-center gap-6 pb-4 w-full">
+          <select
+            type="text"
+            formControlName="currencyCode"
+            class="border rounded-md p-2 w-32"
+            placeholder="Kod waluty"
+          >
+            <option *ngFor="let code of Object.values(CurrencyCodes)">
+              {{ code }}
+            </option>
+          </select>
+
+          <input
+            type="date"
+            formControlName="date"
+            class="border rounded-md p-2"
+          />
+        </div>
+
+        <div class="flex justify-center items-center gap-4 w-full">
+          <button
+            class="bg-blue-500 text-white rounded-md px-4 py-2 mr-4 w-full"
+            [ngClass]="{ 'placeholder-opacity-50': historyForm.invalid }"
+            type="submit"
+            [disabled]="historyForm.invalid"
+            (click)="onSubmitCalculateForm()"
+          >
+            Sprawdź
+          </button>
+
+          <button
+            class="bg-gray-400 text-white rounded-md px-4 py-2 mr-4"
+            type="button"
+            (click)="clear()"
+          >
+            Wyczyść
+          </button>
+        </div>
+      </form>
+
+      <div
+        class="min-h-40 rounded-md w-full px-4 flex justify-center items-center"
+      >
+        <ng-container
+          *ngIf="
+            calculatorForm.get('midRate')!.value ||
+            calculatorForm.get('askRate')!.value ||
+            calculatorForm.get('bidRate')!.value
+          "
+        >
+          <div
+            class="grid grid-cols-2 gap-4 text-gray-600 w-full px-4 text-center"
+          >
+            <p class="font-light italic">Average Exchange Rate:</p>
+
+            <p class="font-medium text-xl">
+              {{ calculatorForm.get("midRate")!.value || "0.00" }}
+            </p>
+
+            <p>Sell Exchange Rate:</p>
+
+            <p class="font-medium text-xl">
+              {{ calculatorForm.get("askRate")!.value || "0.00" }}
+            </p>
+
+            <p>Buy Exchange Rate:</p>
+
+            <p class="font-medium text-xl">
+              {{ calculatorForm.get("bidRate")!.value || "0.00" }}
+            </p>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- right side -->
+    <div class="rounded-md w-full border bg-gray-50 shadow-lg p-4">
+      <ng-container *ngIf="vm.avaregaRateData; else noAverageData">
+        <div class="px-4">
+          <p
+            class="text-gray-700 text-xl text-center uppercase tracking-wider pb-6"
+          >
+            calculator
+          </p>
+
+          <p class="text-gray-500 text-sm font-light">1 PLN equals</p>
+
+          <h5 class="text-gray-500 text-4xl font-medium leading-10">
+            {{ vm.avaregaRateData.rates[0].mid }}
+            <span class="text-base">{{ vm.avaregaRateData.code }}</span>
+          </h5>
+
+          <p class="text-gray-500 text-xs font-light italic pb-4">
+            {{ vm.avaregaRateData.rates[0].effectiveDate | date : "medium" }}
+          </p>
+        </div>
+
+        <!-- formularz -->
+        <form
+          [formGroup]="calculatorForm"
+          (onSubmit)="onSubmitCalculateForm()"
+          class="w-full p-4 flex flex-col justify-center items-center gap-2"
+        >
+          <div class="grid grid-cols-5 gap-4 w-full">
+            <div class="col-span-2 w-full">
+              <fieldset class="w-full">
+                <label class="hidden" for="polishAmount"
+                  >Enter Polish ammount</label
+                >
+
+                <input
+                  type="number"
+                  id="polishAmount"
+                  name="polishAmount"
+                  formControlName="polishAmount"
+                  class="border rounded-md p-2"
+                />
+              </fieldset>
+            </div>
+
+            <div
+              class="col-span-3 w-full font-normal italic text-xl text-left text-gray-500 p-2"
+            >
+              Polish zloty
+            </div>
+          </div>
+
+          <div class="grid grid-cols-5 gap-4 w-full">
+            <div class="col-span-2 w-full">
+              <fieldset class="w-full">
+                <label class="hidden" for="foreignAmount"
+                  >Enter Foreign Currency ammount</label
+                >
+                <input
+                  type="number"
+                  id="foreignAmount"
+                  name="foreignAmount"
+                  formControlName="foreignAmount"
+                  class="border rounded-md p-2"
+                />
+              </fieldset>
+            </div>
+
+            <div
+              class="col-span-3 w-full font-normal italic text-xl text-left text-gray-500 p-2 capitalize"
+            >
+              {{ vm.avaregaRateData.currency.slice(0, 100) || "" }}
+            </div>
+          </div>
+        </form>
+      </ng-container>
+
+      <ng-template #noAverageData>
+        <div
+          class="w-full h-full p-4 text-center border-2 rounded-md flex justify-center items-center"
+        >
+          <p class="text-center text-gray-500 italic pb-8">
+            choose currency and date first
+          </p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</ng-container>
