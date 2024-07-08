@@ -2,35 +2,49 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.2.3.
 
-## Development server
+## Description - Interview Task
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+"Zadaniem jest stworzenie prostej aplikacji do przeliczania walut
 
-## Code scaffolding
+1. Pobieranie danych: Aplikacja powinna pobierać dane o kursach walut z API Narodowego Banku Polskiego (NBP API).
+2. Wyświetlanie kursów walut: Na stronie głównej powinny być wyświetlane aktualne kursy walut z możliwością wyboru daty waluty.
+3. Przeliczanie walut: Użytkownik powinien mieć możliwość przeliczenia kwoty z jednej waluty na drugą. Do tego celu powinien być dostępny formularz, w którym użytkownik może wprowadzić kwotę i wybrać waluty.
+4. Responsywność: Aplikacja powinna być responsywna i dobrze wyglądać na różnych urządzeniach.
+5. Dostępność: Aplikacja powinna spełniać standardy WCAG 2.1.
+6. Stylowanie: Użyj CSS do stworzenia atrakcyjnego i czytelnego interfejsu użytkownika. Zadanie proszę wykonać w Angularze"."
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## URL:
+
+## API Connection
+
+Na potrzeby tego zadania, połączyłem swoją aplikację z zewnętrznym API udostępnionym przez [NBP (Narodowy Bank Polski)](https://api.nbp.pl). Korzystam z trzech endpointów:
+
+1. http://api.nbp.pl/api/exchangerates/tables/{table}/
+2. http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/today`
+3. http://api.nbp.pl/api/exchangerates/rates/{table}/{code}
+4. http://api.nbp.pl/api/exchangerates/rates/{table}/{code}/{date}
+
+gdzie:
+{table} - 'a' | 'b' | 'c',
+{code} - zgodnie z normą [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) (np. EUR, USD, DOL, itd.),
+{date} - data w formacie yyyy-mm-dd
+
+## Clone and Run application locally
+
+```js
+git clone https://github.com/gentlemil/currency-converter-app.git
+cd ./currency-converter-app
+npm i
+ng serve
+
+```
+
+Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
 ## Build
 
 Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
-
-####################################################
-####################################################
-
-Powered by NBP API [link]
-
-API:
-Tables: ['a', 'b', 'c'] - by default I'm using table = 'a'.
-Code, I am using 5 most popular, but there are much more available, check here LINK[https://en.wikipedia.org/wiki/ISO_4217]
