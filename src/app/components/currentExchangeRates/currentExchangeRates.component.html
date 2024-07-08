@@ -3,12 +3,13 @@
     <ng-container *ngIf="vm.currentRates; else noData">
       <p class="text-gray-100 italic py-4">The latest Exchange Rates:</p>
 
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full pb-8">
+      <div
+        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-4 w-full pb-8"
+      >
         <div
           class="w-full bg-white rounded-lg shadow-lg aspect-square hover:scale-110 transition-all"
           *ngFor="let currency of vm.currentRates | keyvalue"
         >
-          <!-- {{ currency | json }} -->
           <div class="p-4">
             <div class="h-16 flex justify-center items-center">
               <h3
