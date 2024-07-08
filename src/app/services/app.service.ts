@@ -13,16 +13,15 @@ import { CurrencyCodes } from '../enums/currencyCodes.enum';
 export class AppService {
   isLoading$ = new BehaviorSubject<boolean>(false);
 
-  private readonly table: Table = 'a'; // set 'a' by default
+  private readonly table: Table = 'a';
   private readonly url: string = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
   // today exchange currency
-  getCurrentExchangeCurrency(
+  public getCurrentExchangeCurrency(
     currencyCode: CurrencyCodes
   ): Observable<ExchangeInterfaceResponse> {
-    this.isLoading$.next(true);
     const fullUrl = `${this.url}/exchangerates/rates/${
       this.table
     }/${currencyCode!.toLowerCase()}/today`;
@@ -34,25 +33,31 @@ export class AppService {
   }
 
   // Current average <currency> exchange rate, calculated on the basis of the last known value
-  getAverageExchangeRate(
+  public getAverageExchangeRate(
     currencyCode: CurrencyCodes
   ): Observable<AverageRateResponse> {
-    // this.isLoading$.next(true);
-    const fullUrl = `${this.url}/exchangerates/rates/${this.table}/${String(
+    const fullUrl = `${this.url}/exchangerates/rates/a/${String(
       currencyCode
     ).toLowerCase()}/`;
-    return this.http.get<AverageRateResponse>(fullUrl);
+    return this.http.get<AverageRateResponse>(fullUrl).pipe(
+      catchError(() => {
+        return EMPTY;
+      })
+    );
   }
 
   // extended data about currency exchange rate (response with buying and selling rates)
-  getExchangeCurrency(
+  public getExchangeCurrency(
     currencyCode: CurrencyCodes,
     date: string
   ): Observable<ExchangeInterfaceResponse> {
-    this.isLoading$.next(true);
     const fullUrl = `${
       this.url
     }/exchangerates/rates/c/${currencyCode!.toLowerCase()}/${date}`;
-    return this.http.get<ExchangeInterfaceResponse>(fullUrl);
+    return this.http.get<ExchangeInterfaceResponse>(fullUrl).pipe(
+      catchError(() => {
+        return EMPTY;
+      })
+    );
   }
 }

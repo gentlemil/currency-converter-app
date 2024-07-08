@@ -1,16 +1,25 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppService } from '../../services/app.service';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { ExchangeInterfaceResponse } from '../../types/exchangeRateResponse.interface';
 import {
-  AsyncPipe,
-  DatePipe,
-  JsonPipe,
-  NgClass,
-  NgFor,
-  NgIf,
-} from '@angular/common';
+  FormBuilder,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import {
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  EMPTY,
+  Observable,
+  of,
+  Subject,
+  switchMap,
+  takeUntil,
+  tap,
+} from 'rxjs';
+import { AsyncPipe, DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { AppService } from '../../services/app.service';
+import { ExchangeInterfaceResponse } from '../../types/exchangeRateResponse.interface';
 import { CurrencyCodes } from '../../enums/currencyCodes.enum';
 import { AverageRateResponse } from '../../types/avarageRateResponse.interface';
 
@@ -22,39 +31,71 @@ import { AverageRateResponse } from '../../types/avarageRateResponse.interface';
   imports: [
     NgIf,
     AsyncPipe,
+    FormsModule,
     ReactiveFormsModule,
     NgClass,
     NgFor,
     DatePipe,
-    JsonPipe,
   ],
 })
 export class CalculatorComponent {
-  // TODO: remove default values
   public historyForm = this.fb.group({
-    currencyCode: [CurrencyCodes.USD, Validators.required],
-    date: ['2024-07-05', Validators.required],
+    currencyCode: [null, Validators.required],
+    date: ['', Validators.required],
   });
 
   public calculatorForm = this.fb.group({
-    currencyCode: ['', Validators.required], // get from getAverageRates()
-    type: ['buy', Validators.required], // needed?
-    rates: [null, Validators.required], // needed?
+    currencyCode: [
+      '',
+      [Validators.required, Validators.minLength(3), Validators.maxLength(3)],
+    ],
+    currencyFullName: ['', Validators.required],
     effectiveDate: ['', Validators.required],
-    polishAmount: [1, Validators.required],
+    polishAmount: [0, Validators.required],
     foreignAmount: [0, Validators.required],
 
-    bidRate: [0, Validators.required], // get from getHistoricalRates()
-    askRate: [0, Validators.required], // get from getHistoricalRates()
-    midRate: [0, Validators.required], // get from getAvaregaRateData
+    bidRate: [0, Validators.required],
+    askRate: [0, Validators.required],
+    midRate: [0, Validators.required],
   });
 
-  currencyExchangeHistoryData$ =
-    new BehaviorSubject<ExchangeInterfaceResponse | null>(null);
-  avaregaRateData$ = new BehaviorSubject<AverageRateResponse | null>(null);
+  public calcResult$: Observable<{ foreign: any; polish: any }> = combineLatest(
+    {
+      foreign:
+        this.calculatorForm.get('polishAmount')?.valueChanges.pipe(
+          debounceTime(300),
+          tap((val: number | null) => {
+            val !== 0 &&
+              this.calculatorForm
+                .get('foreignAmount')!
+                .setValue(0, { emitEvent: false });
+            this.calculate(
+              val!,
+              this.calculatorForm.get('askRate')?.value!
+            ).buy();
+          })
+        ) || EMPTY,
+      polish:
+        this.calculatorForm.get('foreignAmount')?.valueChanges.pipe(
+          debounceTime(300),
+          tap((val: number | null) => {
+            val !== 0 &&
+              this.calculatorForm
+                .get('polishAmount')!
+                .setValue(0, { emitEvent: false });
+            this.calculate(
+              val!,
+              this.calculatorForm.get('bidRate')?.value!
+            ).sell();
+          })
+        ) || EMPTY,
+    }
+  );
 
-  CurrencyCodes = CurrencyCodes;
+  calculatorEnabled$ = new BehaviorSubject<boolean>(false);
+  private _destroy$ = new Subject<void>();
 
+  public readonly CurrencyCodes = CurrencyCodes;
   Object = Object;
 
   constructor(
@@ -62,62 +103,95 @@ export class CalculatorComponent {
     private readonly appService: AppService
   ) {}
 
-  public onSubmitCalculateForm() {
-    if (this.historyForm.invalid) {
-      return;
+  public calculate(
+    amount: number,
+    rate: number
+  ): {
+    buy: () => void;
+    sell: () => void;
+  } {
+    const ctx = this;
+
+    const result: number = parseFloat(
+      ((amount * rate + 10000) / 10000).toFixed(5)
+    );
+
+    function buy(): void {
+      return ctx.calculatorForm
+        .get('foreignAmount')!
+        .setValue(+result, { emitEvent: false });
     }
+
+    function sell(): void {
+      return ctx.calculatorForm
+        .get('polishAmount')!
+        .setValue(+result, { emitEvent: false });
+    }
+
+    return { buy, sell };
+  }
+
+  public onSubmitCalculateForm(): void {
+    if (this.historyForm.invalid) return;
 
     const { currencyCode, date } = this.historyForm.getRawValue();
 
-    // get more detailed data
-    this.getAvaregaRateData(currencyCode!).subscribe(
-      (res: AverageRateResponse) => {
-        this.avaregaRateData$.next(res);
+    this.historyForm.reset();
 
-        if (!res) return;
+    this.getAvaregaRateData(currencyCode!)
+      .pipe(
+        takeUntil(this._destroy$),
+        switchMap((res) => {
+          if (!res) return of(null);
 
-        this.calculatorForm.patchValue({
-          currencyCode: CurrencyCodes[res.code],
-          effectiveDate: res.rates[0].effectiveDate,
-          polishAmount: 1,
-          foreignAmount: 0,
-          midRate: res.rates[0].mid,
-        });
-      }
-    );
+          this.calculatorForm.patchValue({
+            currencyCode: CurrencyCodes[res.code],
+            currencyFullName: res.currency,
+            effectiveDate: date!,
+            polishAmount: 1,
+            foreignAmount: 0,
+            midRate: res.rates[0].mid,
+          });
 
-    this.getHistoricalRates();
+          return this.getHistoricalRates(CurrencyCodes[res.code], date!);
+        }),
+        tap((res) => {
+          if (!res) return;
+
+          this.calculatorForm.patchValue({
+            bidRate: res.rates[0].bid,
+            askRate: res.rates[0].ask,
+          });
+          this.calculatorEnabled$.next(!!res);
+        })
+      )
+      .subscribe((res: ExchangeInterfaceResponse | null) => {
+        this.calculatorEnabled$.next(!!res);
+      });
   }
 
-  // avarega currency rate
-  private getAvaregaRateData(
+  public getAvaregaRateData(
     currencyCode: CurrencyCodes
   ): Observable<AverageRateResponse> {
     return this.appService.getAverageExchangeRate(currencyCode);
   }
 
-  private getHistoricalRates() {
-    const { currencyCode, date } = this.historyForm.getRawValue();
-
-    this.appService
-      .getExchangeCurrency(currencyCode!, date!)
-      .subscribe((res: ExchangeInterfaceResponse) => {
-        if (!res) return;
-
-        this.currencyExchangeHistoryData$.next(res);
-        console.log(this.currencyExchangeHistoryData$.getValue());
-
-        this.calculatorForm.patchValue({
-          bidRate: res.rates[0].bid,
-          askRate: res.rates[0].ask,
-        });
-      });
+  public getHistoricalRates(
+    currencyCode: CurrencyCodes,
+    date: string
+  ): Observable<ExchangeInterfaceResponse> {
+    return this.appService.getExchangeCurrency(currencyCode, date);
   }
 
-  clear() {
+  public clear(): void {
     this.historyForm.reset();
+    this.calculatorForm.reset();
+    this.calculatorEnabled$.next(false);
+  }
 
-    this.avaregaRateData$.next(null);
-    this.currencyExchangeHistoryData$.next(null);
+  public ngOnDestroy(): void {
+    this.clear();
+    this._destroy$.next();
+    this._destroy$.complete();
   }
 }

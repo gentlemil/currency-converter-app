@@ -1,12 +1,4 @@
-<!-- check currency rates history -->
-<!-- calculate  -->
-
-<ng-container
-  *ngIf="{
-    currencyExchangeHistoryData: currencyExchangeHistoryData$ | async,
-    avaregaRateData: avaregaRateData$ | async
-  } as vm"
->
+<ng-container *ngIf="{ calculatorEnabled: calculatorEnabled$ | async } as vm">
   <div
     class="container w-full rounded-md px-4 mt-4 grid grid-cols-1 md:grid-cols-2 gap-4"
   >
@@ -66,32 +58,26 @@
       <div
         class="min-h-40 rounded-md w-full px-4 flex justify-center items-center"
       >
-        <ng-container
-          *ngIf="
-            calculatorForm.get('midRate')!.value ||
-            calculatorForm.get('askRate')!.value ||
-            calculatorForm.get('bidRate')!.value
-          "
-        >
+        <ng-container *ngIf="vm.calculatorEnabled">
           <div
             class="grid grid-cols-2 gap-4 text-gray-600 w-full px-4 text-center"
           >
             <p class="font-light italic">Average Exchange Rate:</p>
 
             <p class="font-medium text-xl">
-              {{ calculatorForm.get("midRate")!.value || "0.00" }}
+              {{ calculatorForm.get("midRate")?.value || "0.00" }}
             </p>
 
-            <p>Sell Exchange Rate:</p>
+            <p class="font-light italic">Sell Exchange Rate:</p>
 
             <p class="font-medium text-xl">
-              {{ calculatorForm.get("askRate")!.value || "0.00" }}
+              {{ calculatorForm.get("askRate")?.value || "0.00" }}
             </p>
 
-            <p>Buy Exchange Rate:</p>
+            <p class="font-light italic">Buy Exchange Rate:</p>
 
             <p class="font-medium text-xl">
-              {{ calculatorForm.get("bidRate")!.value || "0.00" }}
+              {{ calculatorForm.get("bidRate")?.value || "0.00" }}
             </p>
           </div>
         </ng-container>
@@ -100,7 +86,7 @@
 
     <!-- right side -->
     <div class="rounded-md w-full border bg-gray-50 shadow-lg p-4">
-      <ng-container *ngIf="vm.avaregaRateData; else noAverageData">
+      <ng-container *ngIf="vm.calculatorEnabled; else noAverageData">
         <div class="px-4">
           <p
             class="text-gray-700 text-xl text-center uppercase tracking-wider pb-6"
@@ -111,16 +97,23 @@
           <p class="text-gray-500 text-sm font-light">1 PLN equals</p>
 
           <h5 class="text-gray-500 text-4xl font-medium leading-10">
-            {{ vm.avaregaRateData.rates[0].mid }}
-            <span class="text-base">{{ vm.avaregaRateData.code }}</span>
+            {{ calculatorForm.get("midRate")!.value || "0.00" }}
+            <span class="text-base">{{
+              calculatorForm.get("currencyCode")!.value
+            }}</span>
           </h5>
 
           <p class="text-gray-500 text-xs font-light italic pb-4">
-            {{ vm.avaregaRateData.rates[0].effectiveDate | date : "medium" }}
+            {{ calculatorForm.get("effectiveDate")!.value | date : "medium" }}
           </p>
         </div>
 
         <!-- formularz -->
+        <ng-container *ngIf="{ calcResult: calcResult$ | async }">
+          polishAmount :
+          {{ calculatorForm.get("polishAmount")!.value }} foreignAmount:
+          {{ calculatorForm.get("foreignAmount")!.value }}
+        </ng-container>
         <form
           [formGroup]="calculatorForm"
           (onSubmit)="onSubmitCalculateForm()"
@@ -169,7 +162,10 @@
             <div
               class="col-span-3 w-full font-normal italic text-xl text-left text-gray-500 p-2 capitalize"
             >
-              {{ vm.avaregaRateData.currency.slice(0, 100) || "" }}
+              {{
+                calculatorForm.get("currencyFullName")!.value!.slice(0, 100) ||
+                  ""
+              }}
             </div>
           </div>
         </form>
